@@ -1,0 +1,18 @@
+%
+% Compilation commands for try.nw
+%
+%
+% - documentation
+%
+%$ noweave -index try.nw > try-doc.tex
+%$ pdflatex try-doc.tex
+%$ pdflatex try-doc.tex
+%$ pdflatex try-doc.tex
+%
+%
+% - files
+%
+%$ notangle -Rtry try.nw > try
+%$ chmod +x try
+%
+

@@ -1,0 +1,535 @@
+%
+% filename: try.nw
+% version: 3.2
+% date: 2013.05.07
+% author: Ajabu Tex <ajabutex@gmail.com>
+% description: Automation tool for TeX documents.
+%
+%
+% This work may be distributed and/or modified under the
+% conditions of the LaTeX Project Public License, either version 1.3
+% of this license or (at your option) any later version.
+% The latest version of this license is in
+%   http://www.latex-project.org/lppl.txt
+% and version 1.3 or later is part of all distributions of LaTeX
+% version 2005/12/01 or later.
+%
+% This work has the LPPL maintenance status `maintained'.
+% 
+% The Current Maintainer of this work is Ajabu Tex.
+%
+% This work consists of the file try.nw
+% and the derived files
+%
+%     try
+%     try.pdf
+%
+%
+% This file is written in noweb. To extract and compile the
+% program and the documentation use the following commands:
+%
+% - program
+%
+%$ notangle -Rtry try.nw > try
+%$ chmod +x try
+%
+% - documentation
+%
+%$ noweave -index try.nw > try-doc.tex
+%$ pdflatex try-doc.tex
+%$ pdflatex try-doc.tex
+%$ pdflatex try-doc.tex
+%
+
+\def\page{\vfill\pagebreak}
+
+\def\TrY{{\sl TrY}}
+
+\title{TrY}
+\author{Ajabu Tex\\ajabutex@gmail.com}
+\date{May 7, 2013}
+
+\maketitle
+
+\tableofcontents
+
+\page
+\part{Preliminaries}
+\section{Introduction}
+This document describes the algorithms needed to implement a system for
+automating the compilation of (La)\TeX\ documents.
+
+The characteristics of the implementation allow to use the program for the
+automation of other procedures, such as the compilation of files of {\it
+Literate Programming}, and in all cases in which a sequence of [[bash]]
+commands is needed to process a text file.
+
+The language used is {\sl Python}, chosen for its expressive power, stability,
+large endowment of standard libraries and the fact to be natively installed on
+most Linux systems.
+
+To obtain the program code and the documentation, the file [[try.nw]] has to be
+compiled with [[noweb]] by Norman Ramsey, a simple tool for {\it Literate
+Programming}.
+
+You can find informations about it at:
+\begin{quote}
+[[
+http://www.cs.tufts.edu/~nr/noweb/
+http://www.ctan.org/tex-archive/web/noweb
+]]
+\end{quote}
+
+\section{Scope of use}
+There are already some great programs aimed to automate the compilation of
+\TeX\ and \LaTeX\ documents: {\sl latexmk} by John Collins
+(http://www.phys.psu.e\-du/\textasciitilde collins/software/latexmk-jcc/),
+{\sl Rubber} by Emmanuel Beffara (http://la\-unchpad.net/rubber), {\sl arara}
+by Paulo Cereda (http://cereda.github.io/arara/).
+
+{\sl arara} is the program from which I took inspiration for the creation of
+\TrY. I really like the idea behind the implementation of {\sl arara}, namely
+that of making explicit in the document the list of commands needed to
+compile it.
+
+{\sl arara} is a nice piece of software but has some limitations that
+make it useless for my work, limits relating to the handling of the Linux
+filters, pipes and subshells.
+
+\TrY\ only works on Linux (and perhaps Mac OS), but on Linux practically has no
+limitation. He can do anything that can be done on Linux. In practice the
+\TrY\ commands are nothing but [[bash]] commands inserted in the comments of
+a document.
+
+Last but not least, \TrY\ could not be simpler than it is.
+
+\section{Contributing to the project}
+The project repository is hosted on Bitbucket; feel free to contribute in
+any way. If you want to fork the project or want to send a pull request go to
+\begin{quote}
+https://bitbucket.org/ajabutex/try
+\end{quote}
+
+\section{How to use}
+\subsection{Installation}
+If you have received this package with the installation of TeXLive also
+\TrY\ should be installed correctly.
+
+Otherwise, be sure that the file [[try]] is executable and then copy it
+in the [[/usr/bin]] directory with the following commands:
+\begin{quote}
+[[chmod +x try
+sudo cp try /usr/bin/try]]
+\end{quote}
+
+\subsection{Mechanics}
+\TrY\ scans the document looking for [[bash]] commands into in the comment lines
+and executes them one after the other.
+
+The typical form of the \TrY\ commands is the following:
+
+\begin{quote}
+[[%$ <command> <parameter> <parameter> ...]]
+\end{quote}
+
+\begin{enumerate}
+\item The first element of the line must be the comment symbol (`[[%]]');
+\item immediately following the dollar sign (`[[$]]');
+\item follows a space;
+\item finally, the Linux command with its parameters.
+\end{enumerate}
+
+For example:
+\begin{quote}
+[[%
+%$ pdflatex -synctex=1 -halt-on-error filename.tex
+%]]
+\end{quote}
+
+In a \TrY\ command you can give instructions to process any file, but
+if the file name passed to the command as a parameter is equal to the name
+of the document, the file name can be replaced by the placeholder `[[$0]]'.
+
+For example this \TrY\ command list:
+\begin{quote}
+[[%
+%$ pdflatex -shell-escape filename.tex
+%$ bibtex -min-crossref=3 filename.aux
+%$ pdflatex -shell-escape filename.tex
+%$ pdflatex -shell-escape filename.tex
+%]]
+\end{quote}
+
+is equivalent, if written in the document `[[filename.tex]]' to the following
+command list:
+\begin{quote}
+[[%
+%$ pdflatex -shell-escape $0
+%$ bibtex -min-crossref=3 filename.aux
+%$ pdflatex -shell-escape $0
+%$ pdflatex -shell-escape $0
+%]]
+\end{quote}
+
+With \TrY\ you can also process other files than \TeX\ or \LaTeX\ documents.
+In this case you need to tell the program which is the comment symbol used,
+using the statement [[$trycommentchar=x$]], for example:
+
+\begin{quote}
+[[#
+# Sample python listing
+#
+# $trycommentchar=#$
+#
+#$ python -B $0 -W message
+#]]
+\end{quote}
+
+\subsection{The command line}
+To process a document with \TrY\ open a terminal and use the following command
+line:
+
+\begin{quote}
+[[$ try [file [--log] [--verbose] | --help | --version]]]
+\end{quote}
+
+\begin{description}
+\item[[[file]]] is the name of the document, including the extension, that you
+want to process;
+\item[[[-h | --help]]] prints a help message and exits;
+\item[[[-l | --log]]] produces a log file with the operation carried out by
+the program;
+\item[[[-v | --verbose]]] prints the output of the program;
+\item [[[-V | --version]]] prints version and copyright information.
+\end{description}
+
+If you use a programmable text editor, it can be set for use with \TrY.
+For example, to create a command that launches \TrY\ from [[GEdit]] you can
+do this way:
+
+\begin{enumerate}
+\item menu [[Tools -> Manage externals tools]]
+\item list [[All Languages]]. Click on [[Add a new tool]]. Name
+it [[Compile TrY]]
+\item In the [[Edit]] pane write:
+\begin{quote}
+[[#!/bin/bash
+try $GEDIT_CURRENT_DOCUMENT_NAME --log --verbose
+]]
+\end{quote}
+\item [[Shortcut Key -> Shift+Ctrl+%]] (or whatever you want)
+\item [[Save -> Current document]]
+\item [[Input -> Nothing]]
+\item [[Output -> Display in bottom pane]]
+\item [[Applicability -> All documents -> All Languages]]
+\end{enumerate}
+
+Now you can start building with \TrY\ the document you are working on with GEdit
+simply by pressing the key combination [[Shift+Ctrl+%]].
+
+\page
+\part{\TrY\ the program}
+\section{The development tree}
+<<try>>=
+<<Preliminaries>>
+# This file was generated with the notangle utility.
+# The original source file was: try.nw
+# copyright (C) 2013 by Ajabu Tex.
+# The full documentation is in try-doc.pdf
+
+<<Standard libraries>>
+<<Global variables>>
+<<Log management>>
+<<Dispatch function>>
+<<Search function>>
+<<Execution>>
+<<Main module>>
+
+@ \section{The code}
+<<Preliminaries>>=
+#!/usr/bin/env python
+
+@ The {\it shebang} allows you to run the program from a terminal without
+having to specify the interpreter.
+
+It is necessary that the file is made executable with the command
+\begin{quote}
+[[chmod +x filename]]
+\end{quote}
+
+<<Standard libraries>>=
+import sys
+@ 
+The library [[sys]] offers a number of resources to interact with the
+operating system. Here it will be used to access the command line arguments.
+@
+<<Standard libraries>>=
+import os
+@ The library [[os]] provides a wrapper to access the functionalities of
+various operating systems.
+
+[[Windows]] doesn't support many of the features of the library [[os]]. The
+library [[os]] doesn't support some of the features of [[Windows]]. It
+follows that [[Windows]] is not compatible with \TrY.
+
+The library [[os]] will be used to manage the commands to switch to Linux.
+@
+<<Standard libraries>>=
+from datetime import datetime
+
+@ 
+
+<<Global variables>>=
+prog_name = 'TrY'
+prog_version = '3.2'
+prog_author = 'Ajabu Tex'
+prog_revisiondate = 'May 7, 2013'
+
+@ %def prog_name prog_version prog_author prog_revisiondate
+
+<<Global variables>>=
+logo = """
+         _____   __   __
+        |_   _| _\ \ / /
+          | || '__\ V / 
+          | || |   | |
+          |_||_|   |_|"""
+
+banner = prog_name + " " + prog_version + " of " + prog_revisiondate + \
+    " - A simple automation tool\n" + \
+    "Copyright (c) 2013, " + prog_author + "\n" + \
+    "Some rights reserved (read the documentation about this)."
+
+help_screen = logo + "\n\n" + \
+    banner + "\n" + """
+usage: try [file [--log] [--verbose] | --help | --version]
+-h,--help      print this help message
+-l,--log       generate a log output
+-v,--verbose   print the command output
+-V,--version   print the application version and copyright info."""
+
+version_screen = logo + "\n\n" + \
+    banner + "\n" + """
+This work may be distributed and/or modified under the
+conditions of the LaTeX Project Public License, either
+version 1.3 of this license or (at your option) any later
+version. The latest version of this license is in
+
+    http://www.latex-project.org/lppl.txt
+
+and version 1.3 or later is part of all distributions of
+LaTeX version 2005/12/01 or later."""
+
+@ %def logo banner help_screen version_screen
+
+The main module contains the parameters taken from the command line and passes
+them to the function [[dispatch()]], which will interpret the parameters and
+call the service routines.
+<<Main module>>=
+if __name__ == "__main__":
+    params = sys.argv
+    dispatch(params)
+    sys.exit
+
+@ %def <main_module>
+
+Given the definition of the command line
+\begin {quote}
+[[$ try [file [-log] [-verbose] | -help | -version]]]
+\end{quote}
+it follows that if the first parameter is [[file]] can follow anything, or
+[[-log]] or [[-verbose]], or even both. If the first parameter is [[-help]]
+or [[-version]] does not follow anything else. Moreover, in this last case,
+you should not process any file.
+
+In summary, the cases are (in order of complexity):
+\begin{itemize}
+   \item [[-help]]
+   \item [[-version]]
+   \item [[filename]]
+   \begin{itemize}
+     \item [[(nothing)]]
+     \item [[-log]]
+     \item [[-verbose]]
+     \item [[-log -verbose | -verbose -log]]
+   \end{itemize}
+\end{itemize}
+
+Please note that if the parameter list contains only one member, this is the
+name of the calling program (in this case [[try]].)
+
+<<Dispatch function>>=
+def dispatch(paramlist):
+    params={}
+    idx = 0
+
+    if ('--help' in paramlist):
+        idx = paramlist.index('--help')
+    if ('-h' in paramlist):
+        idx = paramlist.index('-h')
+    if idx > 0:
+        params['argument_help'] = True
+        gobble = paramlist.pop(idx)
+        idx = 0
+    else:
+        params['argument_help'] = False
+
+    if ('--version' in paramlist):
+        idx = paramlist.index('--version')
+    if ('-V' in paramlist):
+        idx = paramlist.index('-V')
+    if idx > 0:
+        params['argument_version'] = True
+        gobble = paramlist.pop(idx)
+        idx = 0
+    else:
+        params['argument_version'] = False
+
+    if len(paramlist) >= 2:
+        params['file_name'] = paramlist[1]
+    elif len(paramlist) < 2 and not params['argument_version']:
+        params['argument_help'] = True
+  
+    params['argument_log'] = ('-l' in paramlist) or ('--log' in paramlist)
+    params['argument_verbose'] = ('-v' in paramlist) or \
+                                 ('--verbose' in paramlist)
+
+    if params['argument_help']:
+        print help_screen
+        sys.exit()
+    elif params['argument_version']:
+        print version_screen
+        sys.exit()
+
+    try:
+        if params['argument_log']:
+            log(prog_name + ' ' + prog_version + ': Starting session')
+            log('Parameters list: ' + str(paramlist))
+            log('Processing file: ' + params['file_name'])
+        lines_list = lines_from(params)
+    except IOError:
+        print "Non-existent file name '" + params['file_name'] + \
+              "' or malformed command line.\n" + \
+              "Type 'try --help' to learn how to use the program.\n"
+        if params['argument_log']:
+            log('Execution abnormally terminated')
+    else:
+        for line in lines_list:
+            execute(line, params)
+        if params['argument_log']:
+            log('Session terminated')
+
+@ %def dispatch
+
+The function [[log()]] takes as input a string, processes it and saves it in
+a file.
+<<Log management>>=
+def log(log_string):
+    now = datetime.now()
+    time_s = now.strftime("%d %b %Y %H:%M:%S.%f")
+    log_string = time_s + ' ' + log_string
+    lf = open('try.log', 'a')
+    lf.write(log_string + '\n')
+    lf.close
+
+@ %def log
+
+The function [[lines_from(afilename)]] takes as input a file name, analyzes
+it to look for valid commands and returns the list of the commands found.
+<<Search function>>=
+def lines_from(parameters_list):
+    file_name = parameters_list['file_name']
+    need_log = parameters_list['argument_log']
+
+    if need_log:
+        log('Looking for TrY commands in ' + file_name)
+    f = open(file_name, 'r')
+    all_lines = f.readlines()
+    f.close()
+    comment_char = commentchar_in(all_lines)
+    if need_log:
+        log('Comment char used: ' + comment_char)
+    init_flag = comment_char + '$ '
+    result = commandlist_in(parameters_list, all_lines, init_flag)
+    return result
+
+@ %def lines_from
+
+@ [[commentchar_in(lines)]] takes as input a list of lines of text and returns
+the default comment character (`[[%]]') or the one defined by the statement
+[[$trycommentchar]] that may be present.
+<<Search function>>=
+def commentchar_in(lines):
+    result = '%'
+    for line in lines:
+        if '$trycommentchar=' in line:
+            result = line.rpartition('$trycommentchar=')[2].rsplit('$')[0]
+    return result
+
+@ %def commentchar_in
+
+@ The function [[commandlist_in(afile, lines, flag)]] takes as input a file
+name, a list of lines of text and a text string. Returns a list of \TrY\
+commands, which is a list of bash commands present on the lines that begin
+with the string [[flag]], in which has been replaced any occurrence of the
+string `[[$0]] 'with the file name.
+<<Search function>>=
+def commandlist_in(parameters_list, lines, flag):
+    verbose = parameters_list['argument_verbose']
+    need_log = parameters_list['argument_log']
+    file_name = parameters_list['file_name']
+
+    result = []
+    for line in lines:
+        if line.startswith(flag):
+            if '$0' in line:
+                line = line.replace('$0', file_name)
+            line = line.strip()
+            line = line.partition(flag)[2]
+            if verbose:
+               print('Found command ' + line)
+            if need_log:
+                log('Found command: ' + line) 
+            result.append(line)
+    if len(result) == 0:
+        if need_log:
+            log('No commands found.')
+        if verbose:
+            print('No commands found.')
+    return result
+
+@ %def commandlist_in
+
+@ [[execute(command_line)]] takes as input a string representing a Unix command
+and passes it to the operating system for the execution.
+<<Execution>>=
+def execute(command_line, params):
+    verbose = params['argument_verbose']
+    need_log = params['argument_log']
+
+    if verbose:
+        print 'Executing', command_line.partition(' ')[0].strip('('), '... '
+    if need_log:
+        log('Running line: ' + command_line)
+    exit_status = os.system(command_line)
+    if exit_status != 0:
+        sys.stderr.write('TrY: error at system level. \n' + \
+                         'Execution aborted with exit status ' + \
+                         str(exit_status) + '\n')
+        if need_log:
+            log('Execution aborted with exit status ' + str(exit_status))
+        sys.exit(exit_status)
+    else:
+        if verbose:
+            print 'SUCCESS\n'
+        if need_log:
+            log('Done')
+
+@ %def execute
+
+\section{Indexes}
+\subsection{Chunks.}
+\nowebchunks
+\subsection{Identifiers}
+\nowebindex
+

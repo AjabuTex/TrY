@@ -1,0 +1,38 @@
+#!/bin/bash
+
+# Procedura di aggiornamento e installazione di TrY sul mio sistema
+#
+#
+# Crea una directory temporanea e vi copia i files necessari
+#
+mkdir -pv .tmp
+cp -fuv try.nw .tmp/try.nw
+cd .tmp
+#
+#
+# Estrae i files di documentazione e li compila
+#
+noweave -index try.nw > try-doc.tex
+pdflatex try-doc.tex
+pdflatex try-doc.tex
+pdflatex try-doc.tex
+cp -fuv try-doc.pdf ..
+#
+#
+# Estrae lo script python e lo copia nella directory /bin
+#
+notangle -Rtry try.nw > try
+chmod +x try
+sudo cp -fuv try /usr/bin/try
+#
+#
+# Esce dalla directory, la cancella e saluta
+#
+cd ..
+rm -rv .tmp
+echo ""
+echo "Happy TrYing!"
+echo ""
+#
+#
+# fine
