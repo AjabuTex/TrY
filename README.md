@@ -19,8 +19,8 @@ Limitations
 -----------
 
 TrY is written for Linux and works on Linux. I didn't test the program on
-Windows. **I don't know if the program properly works on Windows. I think
-not.**
+Windows.  
+**I don't know if the program properly works on Windows. I think not.**
 
 
 Contents of the package
