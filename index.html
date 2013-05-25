@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <meta charset='utf-8' />
+    <meta http-equiv="X-UA-Compatible" content="chrome=1" />
+    <meta name="description" content="Try : TeX/LaTeX compilation automation" />
+
+    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
+
+    <title>Try</title>
+  </head>
+
+  <body>
+
+    <!-- HEADER -->
+    <div id="header_wrap" class="outer">
+        <header class="inner">
+          <a id="forkme_banner" href="https://github.com/AjabuTex/TrY">View on GitHub</a>
+
+          <h1 id="project_title">Try</h1>
+          <h2 id="project_tagline">TeX/LaTeX compilation automation</h2>
+
+            <section id="downloads">
+              <a class="zip_download_link" href="https://github.com/AjabuTex/TrY/zipball/master">Download this project as a .zip file</a>
+              <a class="tar_download_link" href="https://github.com/AjabuTex/TrY/tarball/master">Download this project as a tar.gz file</a>
+            </section>
+        </header>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div id="main_content_wrap" class="outer">
+      <section id="main_content" class="inner">
+        <h1>TrY</h1>
+
+<p>TeX/LaTeX compilation automation.</p>
+
+<p>Author: Ajabu Tex <a href="mailto:ajabutex@gmail.com">ajabutex@gmail.com</a><br>
+Version: 3.2 - May 7, 2013</p>
+
+<hr><p>Program for automating the compilation of TeX/LaTeX documents. Scans the
+commands from the comment lines of the document and executes them
+automatically.</p>
+
+<p>Great attention is paid to the flexibility and ease of use.</p>
+
+<h2>Limitations</h2>
+
+<p>TrY is written for Linux and works on Linux. I didn't test the program on
+Windows.<br><strong>I don't know if the program properly works on Windows. I think not.</strong></p>
+
+<h2>Contents of the package</h2>
+
+<ul>
+<li>  try.nw: the source code of the program and the documentation</li>
+<li>  try: the python program</li>
+<li>  try-doc.pdf: the documentaton</li>
+<li>  sha1.sum: checksum report</li>
+<li>  README: this file</li>
+</ul><h2>How to compile it</h2>
+
+<p>The source file (`try.nw') is written in noweb, a tool by Norman Ramsey
+for Literate Programming. To extract and compile the program and the
+documentation use the following commands:</p>
+
+<ul>
+<li>
+<p>program</p>
+
+<pre><code>$ notangle -Rtry try.nw &gt; try
+$ chmod +x try
+</code></pre>
+</li>
+<li>
+<p>documentation</p>
+
+<pre><code>$ noweave -index try.nw &gt; try-doc.tex
+$ pdflatex try-doc.tex
+$ pdflatex try-doc.tex
+$ pdflatex try-doc.tex
+</code></pre>
+</li>
+</ul><h2>Installation</h2>
+
+<p>Copy the file <code>try</code> into the <code>bin</code> directory of your system, e.g.:</p>
+
+<pre><code>$ sudo cp try /usr/bin/try
+</code></pre>
+
+<h2>Use</h2>
+
+<p>Open a terminal and use the following command line:</p>
+
+<pre><code>$ try [file [--log] [--verbose] | --help | --version]
+</code></pre>
+
+<p>More on this in <code>try-doc.pdf</code></p>
+
+<h2>Contributing</h2>
+
+<p>If you want to fork the project or want to send a pull request go to</p>
+
+<pre><code>https://github.com/AjabuTex/TrY
+</code></pre>
+
+<h2>License</h2>
+
+<p>This material is subject to the LaTeX Project Public License. See</p>
+
+<pre><code>http://www.ctan.org/tex-archive/help/Catalogue/licenses.lppl.html 
+</code></pre>
+
+<p>for the details of that license.</p>
+
+<p>Happy TeXing.</p>
+      </section>
+    </div>
+
+    <!-- FOOTER  -->
+    <div id="footer_wrap" class="outer">
+      <footer class="inner">
+        <p class="copyright">Try maintained by <a href="https://github.com/AjabuTex">AjabuTex</a></p>
+        <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
+      </footer>
+    </div>
+
+    
+
+  </body>
+</html>
