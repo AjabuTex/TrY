@@ -1,0 +1,191 @@
+#!/usr/bin/env python
+
+# This file was generated with the notangle utility.
+# The original source file was: try.nw
+# copyright (C) 2013 by Ajabu Tex.
+# The full documentation is in try-doc.pdf
+
+import sys
+import os
+from datetime import datetime
+
+prog_name = 'TrY'
+prog_version = '3.2'
+prog_author = 'Ajabu Tex'
+prog_revisiondate = 'May 7, 2013'
+
+logo = """
+         _____   __   __
+        |_   _| _\ \ / /
+          | || '__\ V / 
+          | || |   | |
+          |_||_|   |_|"""
+
+banner = prog_name + " " + prog_version + " of " + prog_revisiondate + \
+    " - A simple automation tool\n" + \
+    "Copyright (c) 2013, " + prog_author + "\n" + \
+    "Some rights reserved (read the documentation about this)."
+
+help_screen = logo + "\n\n" + \
+    banner + "\n" + """
+usage: try [file [--log] [--verbose] | --help | --version]
+-h,--help      print this help message
+-l,--log       generate a log output
+-v,--verbose   print the command output
+-V,--version   print the application version and copyright info."""
+
+version_screen = logo + "\n\n" + \
+    banner + "\n" + """
+This work may be distributed and/or modified under the
+conditions of the LaTeX Project Public License, either
+version 1.3 of this license or (at your option) any later
+version. The latest version of this license is in
+
+    http://www.latex-project.org/lppl.txt
+
+and version 1.3 or later is part of all distributions of
+LaTeX version 2005/12/01 or later."""
+
+def log(log_string):
+    now = datetime.now()
+    time_s = now.strftime("%d %b %Y %H:%M:%S.%f")
+    log_string = time_s + ' ' + log_string
+    lf = open('try.log', 'a')
+    lf.write(log_string + '\n')
+    lf.close
+
+def dispatch(paramlist):
+    params={}
+    idx = 0
+
+    if ('--help' in paramlist):
+        idx = paramlist.index('--help')
+    if ('-h' in paramlist):
+        idx = paramlist.index('-h')
+    if idx > 0:
+        params['argument_help'] = True
+        gobble = paramlist.pop(idx)
+        idx = 0
+    else:
+        params['argument_help'] = False
+
+    if ('--version' in paramlist):
+        idx = paramlist.index('--version')
+    if ('-V' in paramlist):
+        idx = paramlist.index('-V')
+    if idx > 0:
+        params['argument_version'] = True
+        gobble = paramlist.pop(idx)
+        idx = 0
+    else:
+        params['argument_version'] = False
+
+    if len(paramlist) >= 2:
+        params['file_name'] = paramlist[1]
+    elif len(paramlist) < 2 and not params['argument_version']:
+        params['argument_help'] = True
+  
+    params['argument_log'] = ('-l' in paramlist) or ('--log' in paramlist)
+    params['argument_verbose'] = ('-v' in paramlist) or \
+                                 ('--verbose' in paramlist)
+
+    if params['argument_help']:
+        print help_screen
+        sys.exit()
+    elif params['argument_version']:
+        print version_screen
+        sys.exit()
+
+    try:
+        if params['argument_log']:
+            log(prog_name + ' ' + prog_version + ': Starting session')
+            log('Parameters list: ' + str(paramlist))
+            log('Processing file: ' + params['file_name'])
+        lines_list = lines_from(params)
+    except IOError:
+        print "Non-existent file name '" + params['file_name'] + \
+              "' or malformed command line.\n" + \
+              "Type 'try --help' to learn how to use the program.\n"
+        if params['argument_log']:
+            log('Execution abnormally terminated')
+    else:
+        for line in lines_list:
+            execute(line, params)
+        if params['argument_log']:
+            log('Session terminated')
+
+def lines_from(parameters_list):
+    file_name = parameters_list['file_name']
+    need_log = parameters_list['argument_log']
+
+    if need_log:
+        log('Looking for TrY commands in ' + file_name)
+    f = open(file_name, 'r')
+    all_lines = f.readlines()
+    f.close()
+    comment_char = commentchar_in(all_lines)
+    if need_log:
+        log('Comment char used: ' + comment_char)
+    init_flag = comment_char + '$ '
+    result = commandlist_in(parameters_list, all_lines, init_flag)
+    return result
+
+def commentchar_in(lines):
+    result = '%'
+    for line in lines:
+        if '$trycommentchar=' in line:
+            result = line.rpartition('$trycommentchar=')[2].rsplit('$')[0]
+    return result
+
+def commandlist_in(parameters_list, lines, flag):
+    verbose = parameters_list['argument_verbose']
+    need_log = parameters_list['argument_log']
+    file_name = parameters_list['file_name']
+
+    result = []
+    for line in lines:
+        if line.startswith(flag):
+            if '$0' in line:
+                line = line.replace('$0', file_name)
+            line = line.strip()
+            line = line.partition(flag)[2]
+            if verbose:
+               print('Found command ' + line)
+            if need_log:
+                log('Found command: ' + line) 
+            result.append(line)
+    if len(result) == 0:
+        if need_log:
+            log('No commands found.')
+        if verbose:
+            print('No commands found.')
+    return result
+
+def execute(command_line, params):
+    verbose = params['argument_verbose']
+    need_log = params['argument_log']
+
+    if verbose:
+        print 'Executing', command_line.partition(' ')[0].strip('('), '... '
+    if need_log:
+        log('Running line: ' + command_line)
+    exit_status = os.system(command_line)
+    if exit_status != 0:
+        sys.stderr.write('TrY: error at system level. \n' + \
+                         'Execution aborted with exit status ' + \
+                         str(exit_status) + '\n')
+        if need_log:
+            log('Execution aborted with exit status ' + str(exit_status))
+        sys.exit(exit_status)
+    else:
+        if verbose:
+            print 'SUCCESS\n'
+        if need_log:
+            log('Done')
+
+if __name__ == "__main__":
+    params = sys.argv
+    dispatch(params)
+    sys.exit
+
+
